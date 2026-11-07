@@ -6486,14 +6486,18 @@ function DialogLinkInterface(_items, _settings_mask, _id, _item_count) : DialogI
 
   static equals = function(_link)
   {
-    var _structure = self.getstructure();
+    var _level_self = self.getlevel()
+      , _level_link = _link.getlevel()
+    ;
 
-    if (is_undefined(_structure))
+    if (_level_self == _level_link)
       return self == _link;
 
-    return _structure == _link.getstructure()
-      && _structure.getpositionfromlink(self) == _structure.getpositionfromlink(_link)
+    var _largest_link = _level_link > _level_self ? _link : self
+      , _smallest_link = _largest_link == self ? _link : self
     ;
+
+    return _largest_link.getlinkoflevel(min(_level_link, _level_self)) == _smallest_link;
   }
 
 
