@@ -2,7 +2,7 @@
  * @desc A lightweight, bitmask-focused dialog management system.
  * @link https://github.com/MaximilianVolt/GMS2_scripts/tree/main/modulus/dialog_manager
  * @author @MaximilianVolt
- * @version 0.13.0
+ * @version 0.13.1
  */
 
 
@@ -7811,7 +7811,7 @@ function DialogDiffSummaryDTO(_diff_result) : DialogDiffDTO() constructor
     , _node_count = _diff_level_result.getnodecount()
     , _stats_tree = self.computetree(_node_array, _node_count)
     , _stats_levels = self.computelevels(_node_array, _node_count)
-    , _catchall_levels = self.computecatchalls(_stats_levels, _diff_param_group)
+    , _catchall_levels = self.computecatchalls(_node_array, _node_count, _stats_levels, _diff_param_group)
     , _severity = DIALOG_MANAGER.DIFF_SEVERITY_OK
     , _summary_levels = []
   ;
@@ -7953,31 +7953,91 @@ function DialogDiffSummaryDTO(_diff_result) : DialogDiffDTO() constructor
 
 
   /**
-   * @desc Rolls each lower level's aggregate statistics into its parent's modifications when configured.
+   * @desc Aggregates the statistics of the supplied nodes without recursing into their children.
+   * @param {Array<Struct.DialogDiffNodeDTO>} _node_array The node list.
+   * @param {Real} _node_count The number of nodes.
+   * @returns {Struct.DialogDiffStatsDTO}
+   */
+
+  static computenodestats = function(_node_array, _node_count)
+  {
+    var _stats = DialogDiffStatsDTO.create();
+
+    for (var _i = 0; _i < _node_count; ++_i) {
+      _stats.merge(_node_array[_i].getstats());
+    }
+
+    return _stats;
+  }
+
+
+
+  /**
+   * @desc Replaces derived modification counts with child-level changes that exceed their tolerances.
+   * @param {Array<Struct.DialogDiffNodeDTO>} _node_array The node list.
+   * @param {Real} _node_count The number of nodes.
    * @param {Array<Struct.DialogDiffStatsLevelDTO>} _level_stats The aggregate statistics by level.
    * @param {Struct.DialogDiffParamGroupDTO} _diff_param_group The diff parameter group.
    * @returns {Array<Bool>} The levels whose severity is covered by a parent modification tolerance.
    */
 
-  static computecatchalls = function(_level_stats, _diff_param_group)
+  static computecatchalls = function(_node_array, _node_count, _level_stats, _diff_param_group)
   {
     var _catchall_levels = array_create(DIALOG_MANAGER.LEVELS_ITEM_COUNT, false);
 
     for (var _lv = DIALOG_MANAGER.LEVEL_DIALOG; _lv < DIALOG_MANAGER.LEVELS_ITEM_COUNT; ++_lv)
     {
-      if (_diff_param_group.getlevelparam(_lv).hasmodificationtolerance())
-      {
-        var _child_level = _lv - 1
-          , _child_total = _level_stats[_child_level].gettotal()
-          , _rollup_delta = _child_total - _level_stats[_lv].getmodifications()
-        ;
+      var _child_level = _lv - 1
+        , _child_param = _diff_param_group.getlevelparam(_child_level)
+      ;
 
-        _level_stats[_lv].merge(DialogDiffStatsDTO.fromtype(DIALOG_MANAGER.DIFF_OP_MODIFIED, _rollup_delta));
-        _catchall_levels[_child_level] = true;
-      }
+      _catchall_levels[_child_level] |= (_diff_param_group.getlevelparam(_lv).hasmodificationtolerance());
+
+      self.computecatchallnodes(
+        _node_array, _node_count, _lv,
+        _level_stats[_child_level], _child_param, _level_stats[_lv]
+      );
     }
 
     return _catchall_levels;
+  }
+
+
+
+  /**
+   * @desc Updates modified nodes at a level to count only changes not tolerated by the child level.
+   * @param {Array<Struct.DialogDiffNodeDTO>} _node_array The node list.
+   * @param {Real} _node_count The number of nodes.
+   * @param {Real} _level The parent level whose modified nodes are updated.
+   * @param {Struct.DialogDiffStatsLevelDTO} _child_level_stats The aggregate child-level statistics.
+   * @param {Struct.DialogDiffParamDTO} _child_level_param The child-level tolerances.
+   * @param {Struct.DialogDiffStatsLevelDTO} _level_stats The aggregate parent-level statistics.
+   * @returns {Void}
+   */
+
+  static computecatchallnodes = function(_node_array, _node_count, _level, _child_level_stats, _child_level_param, _level_stats)
+  {
+    for (var _i = 0; _i < _node_count; ++_i)
+    {
+      var _node = _node_array[_i];
+
+      if (_node.getlevel() == _level && _node.getoperation().gettype() == DIALOG_MANAGER.DIFF_OP_MODIFIED)
+      {
+        var _child_stats = self.computenodestats(_node.getitems(), _node.getitemcount())
+          , _modification_count = _child_level_param.getuncaughtstatcount(_child_stats, _child_level_stats)
+          , _modification_delta = _modification_count - _node.getstats().getmodifications()
+          , _stats_delta = DialogDiffStatsDTO.fromtype(DIALOG_MANAGER.DIFF_OP_MODIFIED, _modification_delta)
+        ;
+
+        _node.getstats().merge(_stats_delta);
+        _level_stats.merge(_stats_delta);
+      }
+
+      self.computecatchallnodes(
+        _node.getitems(), _node.getitemcount(), _level,
+        _child_level_stats, _child_level_param, _level_stats
+      );
+    }
   }
 
 
@@ -8618,6 +8678,31 @@ function DialogDiffParamDTO(_param_data) : DialogDiffDTO() constructor
     return self.modifications[DIALOG_MANAGER.DIFF_SEVERITY_OK] != 0
       || self.modifications[DIALOG_MANAGER.DIFF_SEVERITY_WARNING] != 0
     ;
+  }
+
+
+
+  /**
+   * @desc Counts only statistics that exceed this level's maximum tolerances.
+   * @param {Struct.DialogDiffStatsDTO} _stats The statistics to count.
+   * @param {Struct.DialogDiffStatsDTO} _aggregate_stats The aggregate statistics used to evaluate tolerances.
+   * @returns {Real}
+   */
+
+  static getuncaughtstatcount = function(_stats, _aggregate_stats)
+  {
+    var _stats_array = _stats.getstatsarray()
+      , _aggregate_stats_array = _aggregate_stats.getstatsarray()
+      , _uncaught_count = 0
+    ;
+
+    for (var _i = 0; _i < DIALOG_MANAGER.__DIFF_OP_STAT_COUNT; ++_i) {
+      if (self.calculatetypeseverity(self.types[_i], _aggregate_stats_array[_i]) == DIALOG_MANAGER.DIFF_SEVERITY_ERROR) {
+        _uncaught_count += _stats_array[_i];
+      }
+    }
+
+    return _uncaught_count;
   }
 
 

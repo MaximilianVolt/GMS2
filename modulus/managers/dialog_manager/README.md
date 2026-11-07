@@ -244,6 +244,8 @@ Use `dialog_structure_compare()` to check that localized structures keep the sam
 
 The comparator aligns items by ID and reports inserted, deleted, moved, and structurally modified items. It does **not** compare dialog text, check whether a translation is complete, or judge translation quality. Treat it as a structural parity check, and validate the actual localized strings separately. The optional third argument supplies comparison tolerances; when omitted, the default tolerances apply.
 
+A derived `MODIFIED` count at a parent level includes only child-level operation types whose aggregate count exceeds that child's maximum tolerance. Thus, changes tolerated at the dialog level do not become sequence modifications; when a parent level has a nonzero modification tolerance, that tolerance applies to the combined child-level changes across all parent items.
+
 ### 3. DIALOG RUNNER CREATION
 
 Create one runner for the structure being played:
