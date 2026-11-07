@@ -7991,7 +7991,7 @@ function DialogDiffSummaryDTO(_diff_result) : DialogDiffDTO() constructor
         , _child_param = _diff_param_group.getlevelparam(_child_level)
       ;
 
-      _catchall_levels[_child_level] |= (_diff_param_group.getlevelparam(_lv).hasmodificationtolerance());
+      _catchall_levels[_child_level] |= _diff_param_group.getlevelparam(_lv).hasmodificationtolerance();
 
       self.computecatchallnodes(
         _node_array, _node_count, _lv,
