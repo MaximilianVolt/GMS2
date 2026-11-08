@@ -5298,11 +5298,11 @@ function DialogComparator() constructor
 
 /**
  * @desc Provides shared level and parent behavior for dialog data objects.
- * @param {Struct.DialogLevelItem} _parent The parent object.
- * @returns {Struct.DialogLevelItem}
+ * @param {Struct.DialogItemInterface} _parent The parent object.
+ * @returns {Struct.DialogItemInterface}
  */
 
-function DialogLevelItem(_parent) : DialogBitmaskRegionWorker() constructor
+function DialogItemInterface(_parent) : DialogBitmaskRegionWorker() constructor
 {
   self.parent = _parent;
 
@@ -5310,7 +5310,7 @@ function DialogLevelItem(_parent) : DialogBitmaskRegionWorker() constructor
 
   /**
    * @desc Returns the parent for this dialog level item.
-   * @returns {Struct.DialogLevelItem}
+   * @returns {Struct.DialogItemInterface}
    */
 
   static getparent = function()
@@ -5323,7 +5323,7 @@ function DialogLevelItem(_parent) : DialogBitmaskRegionWorker() constructor
   /**
    * @desc Sets the parent for this dialog level item.
    * @param {Any} _parent The parent object.
-   * @returns {Struct.DialogLevelItem}
+   * @returns {Struct.DialogItemInterface}
    */
 
   static setparent = function(_parent)
@@ -5354,12 +5354,12 @@ function DialogLevelItem(_parent) : DialogBitmaskRegionWorker() constructor
 /**
  * @desc Provides indexed collection behavior for dialog items.
  * @param {Array} _items The item list.
- * @param {Struct.DialogLevelItem} _parent The parent object.
+ * @param {Struct.DialogItemInterface} _parent The parent object.
  * @param {Real} _item_count The number of items of the collection.
  * @returns {Struct.DialogItemCollection}
  */
 
-function DialogItemCollection(_items, _parent, _item_count) : DialogLevelItem(_parent) constructor
+function DialogItemCollection(_items, _parent, _item_count) : DialogItemInterface(_parent) constructor
 {
   _items = self.normalize(_items);
   _item_count ??= array_length(_items);
@@ -5382,7 +5382,7 @@ function DialogItemCollection(_items, _parent, _item_count) : DialogLevelItem(_p
   /**
    * @desc Creates this dialog item collection from the supplied from.
    * @param {Array<Struct.DialogItem>} _items The item list.
-   * @param {Struct.DialogLevelItem} _parent The parent object.
+   * @param {Struct.DialogItemInterface} _parent The parent object.
    * @param {Real} [_item_count] The number of items of the collection.
    * @returns {Struct.DialogItemCollection}
    */
@@ -5803,7 +5803,7 @@ function DialogItemCollection(_items, _parent, _item_count) : DialogLevelItem(_p
  * @returns {Struct.DialogItem}
  */
 
-function DialogItem(_settings_mask, _id) : DialogLevelItem(undefined) constructor
+function DialogItem(_settings_mask, _id) : DialogItemInterface(undefined) constructor
 {
   static LEVEL = -infinity;
 
