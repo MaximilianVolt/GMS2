@@ -7,7 +7,7 @@
 
 
 
-#macro __DIALOG_MANAGER_VERSION__                      "0.13.0"
+#macro __DIALOG_MANAGER_VERSION__                      "0.13.1"
 #macro __DIALOG_MANAGER_LINK__                         "https://github.com/MaximilianVolt/GMS2/tree/main/modulus/managers/dialog_manager"
 
 #macro __DIALOG_MANAGER_FIELD_VERSION__                "version"
