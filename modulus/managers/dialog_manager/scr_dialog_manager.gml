@@ -18,8 +18,8 @@
 #macro __DIALOG_STRUCTURE_FIELD_MAX_IDS__              "maxids"
 #macro __DIALOG_STRUCTURE_FIELD_COMMENT_PREFIX__       "commentprefix"
 
-#macro __DIALOG_CONTAINER_FIELD_ITEMS__                "items"
-#macro __DIALOG_CONTAINER_FIELD_ITEMCOUNT__            "itemcount"
+#macro __DIALOG_COLLECTION_FIELD_ITEMS__               "items"
+#macro __DIALOG_COLLECTION_FIELD_ITEMCOUNT__           "itemcount"
 #macro __DIALOG_ITEM_FIELD_COMMENT__                   "comment"
 #macro __DIALOG_ITEM_FIELD_SETTINGS__                  "settings"
 #macro __DIALOG_ITEM_FIELD_ID__                        "id"
@@ -3955,8 +3955,8 @@ function DialogImporter() : DialogRawInterface() constructor
     ;
 
     return DialogStructure.create(
-        array_map(_structure_source.get(__DIALOG_CONTAINER_FIELD_ITEMS__), _import_mode),
-        _structure_source.get(__DIALOG_CONTAINER_FIELD_ITEMCOUNT__),
+        array_map(_structure_source.get(__DIALOG_COLLECTION_FIELD_ITEMS__), _import_mode),
+        _structure_source.get(__DIALOG_COLLECTION_FIELD_ITEMCOUNT__),
         _structure_source.get(__DIALOG_STRUCTURE_FIELD_LANG__)
       )
       .setcommentprefix(_structure_source.get(__DIALOG_STRUCTURE_FIELD_COMMENT_PREFIX__))
@@ -4064,11 +4064,11 @@ function DialogImporter() : DialogRawInterface() constructor
     var _scene_source = DialogRawSource.from(_scene_data);
 
     return DialogScene.create(
-      array_map(_scene_source.get(__DIALOG_CONTAINER_FIELD_ITEMS__), self.struct2sequence),
+      array_map(_scene_source.get(__DIALOG_COLLECTION_FIELD_ITEMS__), self.struct2sequence),
       _scene_source.get(__DIALOG_ITEM_FIELD_SETTINGS__),
       _scene_source.get(__DIALOG_ITEM_FIELD_ID__),
       _scene_source.get(__DIALOG_ITEM_FIELD_COMMENT__),
-      _scene_source.get(__DIALOG_CONTAINER_FIELD_ITEMCOUNT__)
+      _scene_source.get(__DIALOG_COLLECTION_FIELD_ITEMCOUNT__)
     );
   }
 
@@ -4085,12 +4085,12 @@ function DialogImporter() : DialogRawInterface() constructor
     var _sequence_source = DialogRawSource.from(_sequence_data);
 
     return DialogSequence.create(
-      array_map(_sequence_source.get(__DIALOG_CONTAINER_FIELD_ITEMS__), self.struct2dialog),
+      array_map(_sequence_source.get(__DIALOG_COLLECTION_FIELD_ITEMS__), self.struct2dialog),
       _sequence_source.get(__DIALOG_ITEM_FIELD_SETTINGS__),
       _sequence_source.get(__DIALOG_SEQUENCE_FIELD_SPEAKERS__),
       _sequence_source.get(__DIALOG_ITEM_FIELD_ID__),
       _sequence_source.get(__DIALOG_ITEM_FIELD_COMMENT__),
-      _sequence_source.get(__DIALOG_CONTAINER_FIELD_ITEMCOUNT__)
+      _sequence_source.get(__DIALOG_COLLECTION_FIELD_ITEMCOUNT__)
     );
   }
 
@@ -4109,10 +4109,10 @@ function DialogImporter() : DialogRawInterface() constructor
     return Dialog.create(
       _dialog_source.get(__DIALOG_FIELD_TEXT__),
       _dialog_source.get(__DIALOG_ITEM_FIELD_SETTINGS__),
-      array_map(_dialog_source.get(__DIALOG_CONTAINER_FIELD_ITEMS__), self.struct2fx),
+      array_map(_dialog_source.get(__DIALOG_COLLECTION_FIELD_ITEMS__), self.struct2fx),
       _dialog_source.get(__DIALOG_ITEM_FIELD_ID__),
       _dialog_source.get(__DIALOG_ITEM_FIELD_COMMENT__),
-      _dialog_source.get(__DIALOG_CONTAINER_FIELD_ITEMCOUNT__)
+      _dialog_source.get(__DIALOG_COLLECTION_FIELD_ITEMCOUNT__)
     );
   }
 
@@ -4173,8 +4173,8 @@ function DialogExporter() : DialogRawInterface() constructor
       __DIALOG_MANAGER_FIELD_LINK__: DialogManager.getlink(),
       __DIALOG_MANAGER_FIELD_VERSION__: DialogManager.getversion(),
       __DIALOG_STRUCTURE_FIELD_LANG__: _dialog_structure.getlang(),
-      __DIALOG_CONTAINER_FIELD_ITEMS__: array_map(_dialog_structure.getitems(), _export_mode),
-      __DIALOG_CONTAINER_FIELD_ITEMCOUNT__: _dialog_structure.getitemcount(),
+      __DIALOG_COLLECTION_FIELD_ITEMS__: array_map(_dialog_structure.getitems(), _export_mode),
+      __DIALOG_COLLECTION_FIELD_ITEMCOUNT__: _dialog_structure.getitemcount(),
       __DIALOG_STRUCTURE_FIELD_COMMENT_PREFIX__: _dialog_structure.getcommentprefix(),
       __DIALOG_STRUCTURE_FIELD_MAX_IDS__: _dialog_structure.getids(),
       __DIALOG_STRUCTURE_FIELD_ID_GENERATOR_MODE__: _dialog_structure.getidgeneratormode(),
@@ -4193,6 +4193,8 @@ function DialogExporter() : DialogRawInterface() constructor
   static exportdiff = function(_diff)
   {
     return {
+      __DIALOG_MANAGER_FIELD_LINK__: DialogManager.getlink(),
+      __DIALOG_MANAGER_FIELD_VERSION__: DialogManager.getversion(),
       __DIALOG_DIFF_FIELD_TREE__: self.exportdifftree(_diff.gettree()),
       __DIALOG_DIFF_FIELD_SUMMARY__: self.exportdiffsummary(_diff.getsummary()),
     };
@@ -4391,11 +4393,11 @@ function DialogExporter() : DialogRawInterface() constructor
   static scene2struct = function(_scene)
   {
     return {
-      __DIALOG_CONTAINER_FIELD_ITEMS__: array_map(_scene.getitems(), self.sequence2struct),
+      __DIALOG_COLLECTION_FIELD_ITEMS__: array_map(_scene.getitems(), self.sequence2struct),
       __DIALOG_ITEM_FIELD_SETTINGS__: _scene.getsettingsmask(),
       __DIALOG_ITEM_FIELD_ID__: string(_scene.getid()),
       __DIALOG_ITEM_FIELD_COMMENT__: _scene.getcomment(),
-      __DIALOG_CONTAINER_FIELD_ITEMCOUNT__: _scene.getitemcount(),
+      __DIALOG_COLLECTION_FIELD_ITEMCOUNT__: _scene.getitemcount(),
     };
   }
 
@@ -4410,12 +4412,12 @@ function DialogExporter() : DialogRawInterface() constructor
   static sequence2struct = function(_sequence)
   {
     return {
-      __DIALOG_CONTAINER_FIELD_ITEMS__: array_map(_sequence.getitems(), self.dialog2struct),
+      __DIALOG_COLLECTION_FIELD_ITEMS__: array_map(_sequence.getitems(), self.dialog2struct),
       __DIALOG_ITEM_FIELD_SETTINGS__: _sequence.getsettingsmask(),
       __DIALOG_SEQUENCE_FIELD_SPEAKERS__: self.exportarg(_sequence.getspeakers()),
       __DIALOG_ITEM_FIELD_ID__: string(_sequence.getid()),
       __DIALOG_ITEM_FIELD_COMMENT__: _sequence.getcomment(),
-      __DIALOG_CONTAINER_FIELD_ITEMCOUNT__: _sequence.getitemcount(),
+      __DIALOG_COLLECTION_FIELD_ITEMCOUNT__: _sequence.getitemcount(),
     };
   }
 
@@ -4432,10 +4434,10 @@ function DialogExporter() : DialogRawInterface() constructor
     return {
       __DIALOG_FIELD_TEXT__: _dialog.gettext(),
       __DIALOG_ITEM_FIELD_SETTINGS__: _dialog.getsettingsmask(),
-      __DIALOG_CONTAINER_FIELD_ITEMS__: array_map(_dialog.getitems(), self.fx2struct),
+      __DIALOG_COLLECTION_FIELD_ITEMS__: array_map(_dialog.getitems(), self.fx2struct),
       __DIALOG_ITEM_FIELD_ID__: string(_dialog.getid()),
       __DIALOG_ITEM_FIELD_COMMENT__: _dialog.getcomment(),
-      __DIALOG_CONTAINER_FIELD_ITEMCOUNT__: _dialog.getitemcount(),
+      __DIALOG_COLLECTION_FIELD_ITEMCOUNT__: _dialog.getitemcount(),
     };
   }
 
